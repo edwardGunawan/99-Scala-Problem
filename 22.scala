@@ -39,10 +39,10 @@ object Problem22 {
     // O(n) time
     // The difference between unfoldLeft is to reverse starting from the Left said, so you will need 
     // to insert the value to the parameter while appending it
-    def unfoldRight[A,B](s:B)(f: B => Option[A,B]): List[A] = f(s) match {
+    def unfoldRight[A,B](s:B)(f: B => Option[(A,B)]): List[A] = f(s) match {
         case None => Nil
         // r is the current value, and n will be the next value that you will want to call the function off
-        case Some((r,n)) => f :: unfoldRight(n)(f)
+        case Some((r,n)) => r :: unfoldRight(n)(f)
     }
 
     def rangeFunctional(low:Int, high:Int):List[Int] = {
