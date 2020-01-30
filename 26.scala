@@ -7,7 +7,7 @@ object Problem26 extends App{
     scala> combinations(3, List('a, 'b, 'c, 'd, 'e, 'f))
     res0: List[List[Symbol]] = List(List('a, 'b, 'c), List('a, 'b, 'd), List('a, 'b, 'e), ...
     */
-    // this is more understandable
+    // this is more understandable (this is the same as using the DFS way)
     def combinations[A](num:Int, lst: List[A]) : List[List[A]] = (num,lst) match {
         case (0, _) => List(Nil)
         case (_, Nil) => Nil
@@ -21,6 +21,15 @@ object Problem26 extends App{
     flatMapSublists is like list.flatMap, but instead of passing each element
     to the function, it passes successive sublists of L.
     So it become like this : List(1,2,3, 2,3, 3) flatMap into the successive sublist
+    so it append the head to the initial of the List, becoming like this : 
+    if n is 2
+        List(1,2)  List(1,3)
+        List(2,3)
+    if n is 1
+        List(1) -------- List(List(1,2,3))
+        List(2) - - - List(List(2,3))
+                 |
+        List(3) -
         Passing the successive sublist of the function. This is where the meat of the algorithm is.
         You either choose the function or you don't choose the function.
     Once you go to the excluded function, on the initial value, that is when the pivot changes to 2,3
@@ -28,9 +37,9 @@ object Problem26 extends App{
     def flatMapSublists[A,B](ls:List[A])(f: (List[A]) => List[B]):List[B] = ls match {
         case Nil => Nil
         case sublist @ (_ :: tl) => {
-            println("getting into included $sublist")
+            println(s"getting into included $sublist")
             val include = f(sublist) 
-            println("getting into excluded")
+            println(s"getting into excluded $tl")
             val exclude = flatMapSublists(tl)(f)
             println(s"include : $include")
             println(s"exclude: $exclude")
@@ -43,15 +52,16 @@ object Problem26 extends App{
         if(num == 0) List(Nil)
         else {
             flatMapSublists(ls)(sl => {
-                println(s"getting into flatMapSubLists in combination Example $num - ${sl}")
-                val whatIsThis = combinationExample(num-1, sl.tail).map(sl.head :: _) // this is where they append all the List(List(b), List(c)) with a because of the map. So essentially this can go O(n*n) as list gets long 
+                println(s"getting into flatMapSubLists in combination Example $num - ${sl.tail}")
+                // if combinationExample(num-1,sl.tail) is an empty List, the map function will not run
+                val whatIsThis = combinationExample(num-1, sl.tail).map{sl.head :: _} // this is where they append all the List(List(b), List(c)) with a because of the map. So essentially this can go O(n*n) as list gets long 
                 println(s"what is this $whatIsThis")
                 whatIsThis
             })
         }
     }
 
-    // println(combinationExample(2, List('a', 'b', 'c')))
+    println(combinationExample(3, List('a', 'b', 'c')))
     // val res = flatMapSublists(List(1,2,3))(sl => {
         // sl
     // })
