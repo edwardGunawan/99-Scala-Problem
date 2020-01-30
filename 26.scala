@@ -30,6 +30,7 @@ object Problem26 extends App{
         List(2) - - - List(List(2,3))
                  |
         List(3) -
+    Thinking about is is have List(1, combination(rest)) the List(1,2, combination(rest)) depending on how deep you will go on n
         Passing the successive sublist of the function. This is where the meat of the algorithm is.
         You either choose the function or you don't choose the function.
     Once you go to the excluded function, on the initial value, that is when the pivot changes to 2,3
