@@ -7,6 +7,7 @@ object Problem26 extends App{
     scala> combinations(3, List('a, 'b, 'c, 'd, 'e, 'f))
     res0: List[List[Symbol]] = List(List('a, 'b, 'c), List('a, 'b, 'd), List('a, 'b, 'e), ...
     */
+    // this is more understandable
     def combinations[A](num:Int, lst: List[A]) : List[List[A]] = (num,lst) match {
         case (0, _) => List(Nil)
         case (_, Nil) => Nil
@@ -19,8 +20,10 @@ object Problem26 extends App{
     /*
     flatMapSublists is like list.flatMap, but instead of passing each element
     to the function, it passes successive sublists of L.
+    So it become like this : List(1,2,3, 2,3, 3) flatMap into the successive sublist
         Passing the successive sublist of the function. This is where the meat of the algorithm is.
         You either choose the function or you don't choose the function.
+    Once you go to the excluded function, on the initial value, that is when the pivot changes to 2,3
     */
     def flatMapSublists[A,B](ls:List[A])(f: (List[A]) => List[B]):List[B] = ls match {
         case Nil => Nil
