@@ -11,8 +11,11 @@ object Problem26 extends App{
     def combinations[A](num:Int, lst: List[A]) : List[List[A]] = (num,lst) match {
         case (0, _) => List(Nil)
         case (_, Nil) => Nil
-        // choose current value or not, but if you choose you need to append it from the front
-        // in java the i increment always, and here there is no i, so it will always be tail
+        // Either choose this or not choose this, however in this example C(n-1,k-1) or C(n-1, k) k represent the count left that you can choose the element
+        // I mistaken that n meaning like the index of n in Java, but n represent k over here
+        // because there is combinations(n,tl) you need to account for an empty List
+        // Therefore the combination(n,tl) let you reset and get all combination that is the next elemnt
+        // That means once the n value stops it will stop recurse one layer and go to the next element as horizontal
         case (n, head::tl) => combinations(n-1, tl).map(head :: _) ::: combinations(n,tl)
        
 
