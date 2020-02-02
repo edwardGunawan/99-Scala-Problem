@@ -64,8 +64,12 @@ def lsortFreq[A](lst:List[List[A]]):List[List[A]] = {
     def swapTuple[A,B](tuple:(A,B)):(B,A) = (tuple._2,tuple._1)
 
     // you can technically replace encode with groupBy
+    // val freqMap = res.map(_.length).sorted.groupBy(identity).view.mapValues(_.length).toMap
 
+    // because encode is (res.length, res.head) instead of groupBy it is (res.head, res), in this case res.head will be the length of 
+    // the List, res.length will be the frequency of how many the same length amount of list appear
     val freqMap = Map(encode(lst.map(_.length).sorted).map{ swapTuple(_) }: _*) // the last _* is to convert it to Map
+    println(freqMap)
 
     // sort the list based on the frequenct in the Map
     lst.sortWith((e1,e2) => freqMap(e1.length) < freqMap(e2.length))
@@ -76,12 +80,13 @@ def lsortFreq[A](lst:List[List[A]]):List[List[A]] = {
 
 
 val res = lsort(List(List('a', 'b', 'c'), List('d', 'e'), List('f', 'g', 'h'), List('d', 'e'), List('i', 'j', 'k', 'l'), List('m', 'n'), List('o')))
+println(res.map(_.length).sorted.groupBy(identity).view.mapValues(_.length).toMap)
 
 // print(pack(res))
 // println(encode(res))
 // println(res)
-val sortFreq = lsortFreq(List(List('a', 'b', 'c'), List('d', 'e'), 
-    List('f', 'g', 'h'), List('d', 'e'), List('i', 'j', 'k', 'l'), List('m', 'n'), List('o')))
-println(sortFreq)
+// val sortFreq = lsortFreq(List(List('a', 'b', 'c'), List('d', 'e'), 
+//     List('f', 'g', 'h'), List('d', 'e'), List('i', 'j', 'k', 'l'), List('m', 'n'), List('o')))
+// println(sortFreq)
 
 }
