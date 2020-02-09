@@ -21,17 +21,20 @@ package arithmetic {
             // Therefore, there will not have any infinite recursion involved, takeWhile will stop at the predicate below
             // Other non-prime usualy are consist of the prime number
             primes takeWhile{n => {
-            n <= Math.sqrt(start)
-        }} forall(start % _ != 0)
-    }
+                n <= Math.sqrt(start)
+            }} forall(start % _ != 0)
 
+            /* my implementation
+            if(start <= 1) {
+                false 
+            } else{
+                // implementation to check if the number is divisible by that number, if it all has a remainder than simple return true
+                (2 to start).toList.takeWhile(start % _ > 0).length == (start-2)
+            }
+            */
+        }
 
-        // if(start <= 1) {
-        //     false 
-        // } else{
-        //     // implementation to check if the number is divisible by that number, if it all has a remainder than simple return true
-        //     (2 to start).toList.takeWhile(start % _ > 0).length == (start-2)
-        // }
+     
     }
 
     object S99Int {
