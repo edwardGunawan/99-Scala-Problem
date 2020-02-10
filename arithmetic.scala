@@ -34,6 +34,16 @@ package arithmetic {
             */
         }
 
+        /*
+            P33
+            Determine whether two positive integer numbers are coprime.
+            Two numbers are coprime if their greatest common divisor equals 1.
+            scala> 35.isCoprimeTo(64)
+            res0: Boolean = true
+        */
+        def isCoprimeTo(num:Int): Boolean = S99Int.gcd(start,num) == 1
+        
+
      
     }
 
@@ -42,6 +52,29 @@ package arithmetic {
         // create a infinite of prime number, because any even number can be divisible by 2 and thus it is not prime
         // therefore, only loop through odd numbers and filter all the prime number it has
         val primes = Stream.cons(2, Stream.from(3,2) filter(_.isPrime))
+
+        /*
+            P32
+            Determine the greatest common divisor of two positive integer numbers.
+            Use Euclid's algorithm.
+            scala> gcd(36, 63)
+            res0: Int = 9
+        */
+        // underlying algorithm states that the gcd will not change if the larger number
+        // is replaced by the difference of the smaller number
+        // for example: gcd(36,60) = (12 x 3 = 36, 12 x 5 = 60) is equal to the gcd of 24 = 12 x 2 and 36 = 12 x 3
+        // if we use division, will stop until both numbers are the same (which is the remainder of 0)
+        // because if a mod b is 0 then b is the GCD of gcd(a,b). Therefore, a,b will have remainder in that sense.
+        def gcd(a:Int, b:Int) : Int = {
+            if(a < b) {
+                gcd(b,a)
+            }
+            else if(b == 0){
+                a
+            } else {
+                gcd(b, a % b)
+            }
+        }
     }
 }
 
