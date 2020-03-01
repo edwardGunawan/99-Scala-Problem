@@ -42,7 +42,19 @@ package arithmetic {
             res0: Boolean = true
         */
         def isCoprimeTo(num:Int): Boolean = S99Int.gcd(start,num) == 1
-        
+
+        /*
+            P34
+            Calculate Euler's totient function phi(m).
+            Euler's so-called totient function phi(m) is defined as the 
+            number of positive integers r (1 <= r <= m) that are coprime to m.
+            scala> 10.totient
+            res0: Int = 4
+        */
+        def totient: Int = (1 to start).foldLeft(0){(a,b) =>
+            if(b.isCoprimeTo(start)) a+1
+            else a
+        }
 
      
     }

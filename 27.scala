@@ -19,7 +19,8 @@ object Problem27 extends App {
 
     /*
         These will let you generate a subset of a lst. However, because helper(n-1,lst.tail) the unchosen part
-        you also put n-1, instead of n, for also counting the 
+        you also put n-1, instead of n, for also counting. It has the constraint for having n on how many value does
+        each combination should have.
 
         In the generateSubSet m is k over here, the amount of choice that you have left
     */
@@ -30,6 +31,16 @@ object Problem27 extends App {
             case (m,head :: tail)=> generateSubSet(m-1,tail).map(head :: _) ::: generateSubSet(m,tail)
         }
     }
+
+    // generating all subset, powerset
+    def generateSubSet[A](lst:List[A]): List[List[A]] = {
+        (lst) match {
+            // case (0,_) => List(Nil)
+            case Nil => List(Nil)
+            case (head :: tail)=> generateSubSet(tail).map(head :: _) ::: generateSubSet(tail)
+        }
+    }
+
     /*
         Disjoint Set : Two set are named to be Disjoint set if they don't have anything in Common. Intersection will be an empty set
     */
@@ -61,9 +72,21 @@ object Problem27 extends App {
         }
     }
 
+    def combination(len:Int, i:Int, lst:List[Int]):List[List[Int]] = {
+        if(len == i) {
+            List(Nil)
+        }
+        else {
+            val includedList = List(lst.head) :: combination(len, i+1, lst.tail) // choose the current head
+            val notIncludedList = combination(len, i+1, lst.tail) // skip the current head
+            includedList ::: notIncludedList
+        }
+    }
+
     
-    println(group(List(2, 2, 5), List("Aldo", "Beat", "Carla", "David", "Evi", "Flip", "Gary", "Hugo", "Ida")))
-    // println(generateSubSet(1,lst))
+    // println(group(List(2, 2, 5), List("Aldo", "Beat", "Carla", "David", "Evi", "Flip", "Gary", "Hugo", "Ida")))
+    val lst = List(1,2,3)
+    println(generateSubSet(lst))
     
 
     // println(group3(lst))
