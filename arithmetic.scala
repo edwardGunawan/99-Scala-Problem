@@ -56,6 +56,25 @@ package arithmetic {
             else a
         }
 
+        /*
+            P35 
+            Determine the prime factors of a given positive integer.
+            Construct a flat list containing the prime factors in ascending order.
+            scala> 315.primeFactors
+            res0: List[Int] = List(3, 3, 5, 7)
+        */
+        def primeFactors:List[Int] = {
+            def primeFactorsR(num:Int, p:Stream[Int]): List[Int] = 
+                if(num.isPrime) List(num)
+                else if(num % p.head == 0) p.head :: primeFactorsR(num / p.head, p)
+                else primeFactorsR(num, p.tail)
+            
+            primeFactorsR(start,primes)
+        }
+
+
+        
+
      
     }
 
