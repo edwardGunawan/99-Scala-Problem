@@ -130,6 +130,34 @@ package arithmetic {
             
         }
 
+        /*
+            P40
+           (**) Goldbach's conjecture.
+            Goldbach's conjecture says that every positive even number greater than 2 is the sum of two prime numbers. E.g. 28 = 5 + 23. It is one of the most famous facts in number theory that has not been proved to be correct in the general case. It has been numerically confirmed up to very large numbers (much larger than Scala's Int can represent). Write a function to find the two prime numbers that sum up to a given even integer.
+            scala> 28.goldbach
+            res0: (Int, Int) = (5,23)
+        */
+        def goldBach: (Int, Int) = {
+            primes.takeWhile( _ < start ).find(p => (start-p).isPrime) match {
+                case Some(p1) => (p1, start-p1)
+                case None => throw new IllegalArgumentException
+            }
+            
+            // my solutions
+            // if(start % 2 == 0) {
+            //     listPrimesinRange(3 to start-3).find(pr => (start - pr).isPrime ) match {
+            //         case Some(prime) =>  (prime, start - prime)
+            //         case None => throw new NoSuchElementException(s"There is no goldBach conjecture for ${start}")
+            //     }
+                
+            // } else {
+            //     throw  new IllegalArgumentException("Not able to find goldBach conjecture.")
+            // }
+        }
+
+
+        
+
         
 
      
@@ -177,6 +205,44 @@ package arithmetic {
             // range.toList.filter(_.isPrime)
         }
 
+        /* 
+            P41
+            (**) A list of Goldbach compositions.
+            Given a range of integers by its lower and upper limit, print a list of all even numbers and their Goldbach composition.
+            scala> printGoldbachList(9 to 20)
+            10 = 3 + 7
+            12 = 5 + 7
+            14 = 3 + 11
+            16 = 3 + 13
+            18 = 5 + 13
+            20 = 3 + 17
+            In most cases, if an even number is written as the sum of two prime numbers, one of them is very small. Very rarely, the primes are both bigger than, say, 50. Try to find out how many such cases there are in the range 2..3000.
+
+            Example (minimum value of 50 for the primes):
+
+            scala> printGoldbachListLimited(1 to 2000, 50)
+            992 = 73 + 919
+            1382 = 61 + 1321
+            1856 = 67 + 1789
+            1928 = 61 + 1867
+        */
+        def printGoldBachListLimited(range:Range, limit:Int = 0): Unit = 
+            getGoldBachRange(range).filter{ 
+                case (n, (firstPrime, _)) => firstPrime >= limit
+            }.foreach {
+            case (n, (firstPrime,secondPrime)) =>  
+                println(s"${n} = ${firstPrime} + ${secondPrime}")
+        }
+
+        def printGoldbachList(range:Range) : Unit = printGoldBachListLimited(range)
+        
+        // Drop while starts at the beginning of the stream and applies a predicate to each item, one by one. It doesn't start returning items in a new stream until it 
+        // reaches an item that does not meet the predicate. Then it stops checking elements against the predicate and returns every item in teh stream from that point on.
+        // TakeWhile starts at the beginning of the stream and applies a predicate to each item, one by one. It returns each item in a new stream until it reaches an item that doesn't meet the prediate.
+        // TakeWhile doesn't return the item that fails to meet the predicate. It stops with the last item that meets the predicate.
+        def getGoldBachRange(range:Range): Stream[(Int,(Int,Int))] = range.toStream.filter(r => {
+            r > 2 && r % 2 == 0
+        }).map(n => (n, n.goldBach))
 
         
     }
