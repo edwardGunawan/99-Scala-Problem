@@ -1,5 +1,40 @@
 package binarytree {
-    sealed trait Tree[+T] 
+    sealed trait Tree[+T] {
+        /*
+            P57 (**) Binary search trees (dictionaries).
+                Write a function to add an element to a binary search tree.
+                scala> End.addValue(2)
+                res0: Node[Int] = T(2 . .)
+
+                scala> res0.addValue(3)
+                res1: Node[Int] = T(2 . T(3 . .))
+
+                scala> res1.addValue(0)
+                res2: Node[Int] = T(2 T(0 . .) T(3 . .))
+                Hint: The abstract definition of addValue in Tree should be def addValue[U >: T <% Ordered[U]](x: U): Tree[U]. The >: T is because addValue's parameters need to be contravariant in T. (Conceptually, we're adding nodes above existing nodes. In order for the subnodes to be of type T or any subtype, the upper nodes must be of type T or any supertype.) The <% Ordered[U] allows us to use the < operator on the values in the tree.
+
+                Use that function to construct a binary tree from a list of integers.
+
+                scala> Tree.fromList(List(3, 2, 5, 7, 1))
+                res3: Node[Int] = T(3 T(2 T(1 . .) .) T(5 . T(7 . .)))
+                Finally, use that function to test your solution to P56.
+
+                scala> Tree.fromList(List(5, 3, 18, 1, 4, 12, 21)).isSymmetric
+                res4: Boolean = true
+
+                scala> Tree.fromList(List(3, 2, 5, 7, 4)).isSymmetric
+                res5: Boolean = false
+        */
+        def addValue[U >: T](value:U)(implicit ev: U => Ordered[U]): Tree[U] = this match {
+            case End => Node(value, End, End)
+            case Node(v, left, right) => 
+                if(value > v) {
+                    Node(v, left, right.addValue(value))
+                } else {
+                    Node(v, left.addValue(value), right)
+                }
+        }
+    }
     case class Node[+T](value:T, left:Tree[T], right: Tree[T]) extends Tree[T] {
         override def toString = "T(" + value.toString + " " + left.toString + " " + right.toString + ")"
     }
@@ -56,6 +91,10 @@ package binarytree {
                     }
                 }
         }
+
+        def fromList[T](list:List[T])(implicit ev: T => Ordered[T]): Tree[T] = list.foldLeft[Tree[T]](End){(b,a) => b.addValue(a)}
+
+        
         
         
         implicit class TreeOps[T](tree: Tree[T]) {
