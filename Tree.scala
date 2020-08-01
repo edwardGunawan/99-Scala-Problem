@@ -94,6 +94,15 @@ package binarytree {
 
         def fromList[T](list:List[T])(implicit ev: T => Ordered[T]): Tree[T] = list.foldLeft[Tree[T]](End){(b,a) => b.addValue(a)}
 
+
+        /*
+        P58 (**) Generate-and-test paradigm.
+            Apply the generate-and-test paradigm to construct all symmetric, completely balanced binary trees with a given number of nodes.
+            scala> Tree.symmetricBalancedTrees(5, "x")
+            res0: List[Node[String]] = List(T(x T(x . T(x . .)) T(x T(x . .) .)), T(x T(x T(x . .) .) T(x . T(x . .))))
+        */
+        def symmetricBalancedTrees[T](num:Int, value:T): List[Tree[T]] = cBalanced(num,value).filter(_.isSymmetric)
+
         
         
         
