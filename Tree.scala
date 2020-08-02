@@ -103,6 +103,66 @@ package binarytree {
         */
         def symmetricBalancedTrees[T](num:Int, value:T): List[Tree[T]] = cBalanced(num,value).filter(_.isSymmetric)
 
+        /*
+            P59 (**) Construct height-balanced binary trees.
+                In a height-balanced binary tree, the following property holds for every node: The height of its left subtree and the height of its right subtree are almost equal, which means their difference is not greater than one.
+                Write a method Tree.hbalTrees to construct height-balanced binary trees for a given height with a supplied value for the nodes. The function should generate all solutions.
+
+                scala> Tree.hbalTrees(3, "x")
+                res0: List[Node[String]] = List(T(x T(x T(x . .) T(x . .)) T(x T(x . .) T(x . .))), T(x T(x T(x . .) T(x . .)) T(x T(x . .) .)), ...
+
+                Recursively go down the height tree. When the height is 1, the List(Node(value)). When height is 0 or -1, it will be List(End). We get the full-height, and the short-height. Then,
+                2 for loop to combine all full height (since height 2 is equal to height 1 node + 1 more node (root)), and another for loop to combine the short height (height-2) and full-height (height-1).
+                Since the it means either left or right subtree has a shorter height and that shorter height will be no more than 1. Therefore, it also get that combination.
+        */
+        def hbalTrees[T](height:Int, value:T): List[Tree[T]] = height match {
+            case h if h < 1 => List(End)
+            case h if h == 1 => List(Node(value))
+            case _ => 
+                // getting the previous height (this can be either on the left or right doesn't matter, as long as later we will add 1 more node as its root to build the current height tree)
+                val fullheight = hbalTrees(height-1, value)
+                // getting the height that is 1 more shorter than the previous height, since there will be a case where the left subtree will have a height of 1 difference with the right subtree
+                val shorterheight = hbalTrees(height-2, value)
+
+                // constructing the case where the both height of the subtree are the same
+                val listOfFullheightCombination = for {
+                    leftSubTree <- fullheight
+                    rightSubTree <- fullheight
+                } yield Node(value, leftSubTree, rightSubTree)
+
+                // constructing the case where the either left or right subtree has a difference height of 1
+                val listOfShorterHeightLeftSideCombination = for {
+                    leftSubTree <- fullheight
+                    shorterSubTree <- shorterheight
+                } yield Node(value, leftSubTree, shorterSubTree)
+
+                val listOfShorterHeightRightSideCombination = for {
+                    rightSubTree <- fullheight
+                    shorterSubTree <- shorterheight
+                } yield Node(value, shorterSubTree, rightSubTree)
+
+                listOfFullheightCombination ::: listOfShorterHeightLeftSideCombination ::: listOfShorterHeightRightSideCombination
+        }
+
+        /*
+            P60 
+            (**) Construct height-balanced binary trees with a given number of nodes.
+            Consider a height-balanced binary tree of height H. What is the maximum number of nodes it can contain? Clearly, MaxN = 2H - 1. However, what is the minimum number MinN? This question is more difficult. Try to find a recursive statement and turn it into a function minHbalNodes that takes a height and returns MinN.
+            scala> minHbalNodes(3)
+            res0: Int = 4
+            On the other hand, we might ask: what is the maximum height H a height-balanced binary tree with N nodes can have? Write a maxHbalHeight function.
+
+            scala> maxHbalHeight(4)
+            res1: Int = 3
+            Now, we can attack the main problem: construct all the height-balanced binary trees with a given nuber of nodes.
+
+            scala> Tree.hbalTreesWithNodes(4, "x")
+            res2: List[Node[String]] = List(T(x T(x T(x . .) .) T(x . .)), T(x T(x . T(x . .)) T(x . .)), ...
+            Find out how many height-balanced trees exist for N = 15.
+        */
+
+        
+
         
         
         
@@ -123,6 +183,25 @@ package binarytree {
                 }
 
                 isSymmetricR(tree, tree)
+            }
+
+            def isBalancedHeight: Boolean = {
+                def countHeight(root:Tree[T]): Int = root match {
+                    case End => 1
+                    case Node(_, left, right) => 
+                        val leftHeight = countHeight(left)
+                        val rightHeight = countHeight(right)
+                        Math.max(leftHeight, rightHeight) + 1
+                }
+
+                tree match {
+                    case End => true
+                    case Node(_, left, right) =>
+                        val lHeight = countHeight(left)
+                        val rHeight = countHeight(right)
+                        if(Math.abs(lHeight-rHeight) > 1) false
+                        else right.isBalancedHeight && left.isBalancedHeight
+                }
             }
         }
         
