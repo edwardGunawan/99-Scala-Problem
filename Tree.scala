@@ -1,5 +1,6 @@
 package binarytree {
     sealed trait Tree[+T] {
+        def nodeCount: Int
         /*
             P57 (**) Binary search trees (dictionaries).
                 Write a function to add an element to a binary search tree.
@@ -36,9 +37,11 @@ package binarytree {
         }
     }
     case class Node[+T](value:T, left:Tree[T], right: Tree[T]) extends Tree[T] {
+        override def nodeCount: Int = left.nodeCount + right.nodeCount + 1 // 1 is the current count
         override def toString = "T(" + value.toString + " " + left.toString + " " + right.toString + ")"
     }
     case object End extends Tree[Nothing] {
+        override def nodeCount: Int = 0
         override def toString = "."
     }
 
@@ -160,6 +163,40 @@ package binarytree {
             res2: List[Node[String]] = List(T(x T(x T(x . .) .) T(x . .)), T(x T(x . T(x . .)) T(x . .)), ...
             Find out how many height-balanced trees exist for N = 15.
         */
+        def minHbalNodes(height: Int): Int = height match {
+            case 0 => 0
+            case 1 => 1
+            case 2 => 2
+            case n =>  minHbalNodes(n-1) + minHbalNodes(n-2) + 1
+        }
+
+        def maxHbalNodes(height:Int): Int = Math.floor(Math.pow(2, height) -1).toInt
+
+
+        /*
+            The Heights of the hbal tree will be log(n) where n is the nodes
+            or we can get all the stream from 1 ~ any height and get the last node where 
+            the value of the node is more equal to the node that is in the argument.
+        */
+        def maxHbalHeight(node:Int): Int = Stream.from(1).takeWhile(minHbalNodes(_) <= node).last
+
+        /*
+            Typically division by 2 will be a height above it, until when it is 1 the height is 1 and count all 
+            the way up the stack by adding 1 a the return call.
+        */
+        def minHbalHeight(node:Int): Int = 
+            // when the node is 0, the height is 0
+            if(node == 0) 0 
+            else  minHbalHeight(node/2) + 1 // node/2 will go one height lower, meaning we account for the current height by having +1
+
+        /*
+            We get the minimum height for the nodes, and the maximum amount of height of the nodes. On each iteration, we 
+            construct the height balanced tree with that height. Then, we filter out the nodes that matches the nodes in the 
+            arguments. The hbalTrees may encounter various combination of hbal trees with various nodes - as long as those nodes
+            matches the height balanced property. Therefore a height of 2 will have 2 nodes and 3 nodes.
+        */
+        def hbalTreesWithNodes[T](nodes:Int, value:T): List[Tree[T]] = 
+            (minHbalHeight(nodes) to maxHbalHeight(nodes)).flatMap(hbalTrees(_, value)).filter(_.nodeCount == nodes).toList
 
         
 
