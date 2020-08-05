@@ -178,7 +178,7 @@ package binarytree {
             or we can get all the stream from 1 ~ any height and get the last node where 
             the value of the node is more equal to the node that is in the argument.
         */
-        def maxHbalHeight(node:Int): Int = Stream.from(1).takeWhile(minHbalNodes(_) <= node).last
+        def maxHbalHeight(node:Int): Int = LazyList.from(1).takeWhile(minHbalNodes(_) <= node).last
 
         /*
             Typically division by 2 will be a height above it, until when it is 1 the height is 1 and count all 
@@ -201,6 +201,8 @@ package binarytree {
         
 
         
+        
+
         
         
         implicit class TreeOps[T](tree: Tree[T]) {
@@ -239,6 +241,18 @@ package binarytree {
                         if(Math.abs(lHeight-rHeight) > 1) false
                         else right.isBalancedHeight && left.isBalancedHeight
                 }
+            }
+
+            /*
+            P61 (*) Count the leaves of a binary tree.
+                    A leaf is a node with no successors. Write a method leafCount to count them.
+                    scala> Node('x', Node('x'), End).leafCount
+                    res0: Int = 1
+            */
+            def leafCount: Int = tree match {
+                case Node(_,End, End) => 1
+                case Node(_, l, r) => l.leafCount + r.leafCount
+                case End => 0
             }
         }
         
