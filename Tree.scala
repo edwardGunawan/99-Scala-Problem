@@ -254,6 +254,19 @@ package binarytree {
                 case Node(_, l, r) => l.leafCount + r.leafCount
                 case End => 0
             }
+
+            /*
+                
+            61A (*) Collect the leaves of a binary tree in a list.
+                    A leaf is a node with no successors. Write a method leafList to collect them in a list.
+                    scala> Node('a', Node('b'), Node('c', Node('d'), Node('e'))).leafList
+                    res0: List[Char] = List(b, d, e)
+            */
+            def leafList:List[T] = tree match {
+                case Node(t, End, End) => List(t)
+                case Node(_, l, r) => l.leafList ::: r.leafList
+                case End => Nil
+            }
         }
         
 
