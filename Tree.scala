@@ -267,6 +267,18 @@ package binarytree {
                 case Node(_, l, r) => l.leafList ::: r.leafList
                 case End => Nil
             }
+
+            /*
+            P62 (*) Collect the internal nodes of a binary tree in a list.
+                    An internal node of a binary tree has either one or two non-empty successors. Write a method internalList to collect them in a list.
+                    scala> Node('a', Node('b'), Node('c', Node('d'), Node('e'))).internalList
+                    res0: List[Char] = List(a, c)
+            */
+            def internalList: List[T] = tree match {
+                case Node(t, End,End) => Nil
+                case Node(t, l, r) => t :: l.internalList ::: r.internalList 
+                case End => Nil
+            }
         }
         
 
