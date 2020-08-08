@@ -279,6 +279,24 @@ package binarytree {
                 case Node(t, l, r) => t :: l.internalList ::: r.internalList 
                 case End => Nil
             }
+
+
+            /*
+                P62B (*) Collect the nodes at a given level in a list.
+                        A node of a binary tree is at level N if the path from the root to the node has length N-1. The root node is at level 1. Write a method atLevel to collect all nodes at a given level in a list.
+                        scala> Node('a', Node('b'), Node('c', Node('d'), Node('e'))).atLevel(2)
+                        res0: List[Char] = List(b, c)
+                        Using atLevel it is easy to construct a method levelOrder which creates the level-order sequence of the nodes. However, there are more efficient ways to do that.
+            */
+            def atLevel(level:Int): List[T] = tree match {
+                case Node(value, left, right) if (level == 1)=> 
+                    List(value)
+
+                case Node(value, left,right) if(level > 1) =>
+                    left.atLevel(level-1) ::: right.atLevel(level-1)
+                case End =>
+                    Nil
+            }
         }
         
 
