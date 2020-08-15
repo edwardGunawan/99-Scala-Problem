@@ -1,5 +1,5 @@
 package binarytree {
-    sealed trait Tree[+T] {
+    sealed abstract class Tree[+T] {
         def nodeCount: Int
         /*
             P57 (**) Binary search trees (dictionaries).
@@ -35,14 +35,54 @@ package binarytree {
                     Node(v, left.addValue(value), right)
                 }
         }
+
+         /*
+            P64 (**) Layout a binary tree (1).
+                As a preparation for drawing a tree, a layout algorithm is required to determine the position of each node in a rectangular grid. Several layout methods are conceivable, one of them is shown in the illustration on the right.
+                In this layout strategy, the position of a node v is obtained by the following two rules:
+
+                x(v) is equal to the position of the node v in the inorder sequence
+                y(v) is equal to the depth of the node v in the tree
+                In order to store the position of the nodes, we add a new class with the additional information.
+
+                case class PositionedNode[+T](override val value: T, override val left: Tree[T], override val right: Tree[T], x: Int, y: Int) extends Node[T](value, left, right) {
+                override def toString = "T[" + x.toString + "," + y.toString + "](" + value.toString + " " + left.toString + " " + right.toString + ")"
+                }
+                Write a method layoutBinaryTree that turns a tree of normal Nodes into a tree of PositionedNodes.
+
+                scala> Node('a', Node('b', End, Node('c')), Node('d')).layoutBinaryTree
+                res0: PositionedNode[Char] = T[3,1](a T[1,2](b . T[2,3](c . .)) T[4,2](d . .))
+                The tree at right may be constructed with Tree.fromList(List('n','k','m','c','a','h','g','e','u','p','s','q')). Use it to check your code.
+
+                // Stuck in how to determine the left side of the binary tree. What should I pass in to the left and right, and what should I return to know the left and right side.
+                The solution is to pass in the x along the way if it is traversing the right binary tree, and increment the count each time traversing the right binary tree.
+                return the nextX as a tuple.
+                Starting from 1
+        */
+        def layoutBinaryTree:Tree[T] = layoutBinaryTreeInternal(1,1)._1
+        def layoutBinaryTreeInternal(x:Int, y:Int):(Tree[T], Int)
     }
     case class Node[+T](value:T, left:Tree[T], right: Tree[T]) extends Tree[T] {
         override def nodeCount: Int = left.nodeCount + right.nodeCount + 1 // 1 is the current count
         override def toString = "T(" + value.toString + " " + left.toString + " " + right.toString + ")"
+
+        override def layoutBinaryTreeInternal(x: Int, y: Int): (Tree[T], Int) = {
+            val (leftSubTree, myX) = left.layoutBinaryTreeInternal(x, y+1)
+            val (rightSubTree, nextX) = right.layoutBinaryTreeInternal(myX+1, y+1)
+            (new PositionedNode(value, leftSubTree, rightSubTree, myX, y), nextX)
+        }
     }
+
+
     case object End extends Tree[Nothing] {
         override def nodeCount: Int = 0
         override def toString = "."
+
+        override def layoutBinaryTreeInternal(x: Int, y: Int): (Tree[Nothing], Int) = (End, x)
+    }
+
+    class PositionedNode[+T](override val value: T, override val left: Tree[T], override val right: Tree[T], x: Int, y: Int) extends Node[T](value, left, right) {
+        override def toString = "T[" + x.toString + "," + y.toString + "](" + value.toString + " " + left.toString + " " + right.toString + ")"
     }
 
     object Node {
@@ -220,6 +260,8 @@ package binarytree {
         
 
         
+
+        
         
 
         
@@ -316,6 +358,9 @@ package binarytree {
                 case End =>
                     Nil
             }
+
+           
+       
 
            
         }
