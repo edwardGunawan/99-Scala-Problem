@@ -63,7 +63,7 @@ package binarytree {
         def layoutBinaryTreeInternal(x:Int, y:Int):(Tree[T], Int)
         
         /*
-                (**) Layout a binary tree (2).
+            P65 (**) Layout a binary tree (2).
                 An alternative layout method is depicted in the illustration opposite. Find out the rules and write the corresponding method. Hint: On a given level, the horizontal distance between neighboring nodes is constant.
                 Use the same conventions as in problem P64.
 
@@ -83,6 +83,14 @@ package binarytree {
                 x-axis. We are calculating all the nodes starting from the top and 2 perhaps is
                 the starting point of the second left node. It will count, based on how deep the 
                 depth of the tree, to calculate the number of nodes of the left substree.
+
+                Since the left-most node will always be 1, we only care about the left most depth of the tree. 
+                We slowly add starting from 2 because height 1 is the root, so 2^2 + 2^3 ... 2^(height of left most tree) + 1(root) = x0.
+                We treat the child as a full binary tree. The leaf node, if it is a complete binary tree will be 2^(height). If height is 2, then the leaf wil have 4 nodes.
+                Each nodes will start from 1,2,3 and 4. Then, d-n means getting the width of the left subtree. 
+                As we go down to the left subtree, we are getting the total width of that subtree. If the height is 4 and the leftsubtree height is 2,
+                then, we will check each of the left subtree in height order, on how much leaf node it will have (width). If we add those all together it will be 
+                the width of the right most leaf node. Plus one will be the place of x0.
         */
         def treeDepth: Int
         def leftmostNodeDepth: Int // the depth of the left most node tree
