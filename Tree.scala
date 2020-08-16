@@ -61,6 +61,39 @@ package binarytree {
         */
         def layoutBinaryTree:Tree[T] = layoutBinaryTreeInternal(1,1)._1
         def layoutBinaryTreeInternal(x:Int, y:Int):(Tree[T], Int)
+        
+        /*
+                (**) Layout a binary tree (2).
+                An alternative layout method is depicted in the illustration opposite. Find out the rules and write the corresponding method. Hint: On a given level, the horizontal distance between neighboring nodes is constant.
+                Use the same conventions as in problem P64.
+
+                scala> Node('a', Node('b', End, Node('c')), Node('d')).layoutBinaryTree2
+                res0: PositionedNode[Char] = T[3,1]('a T[1,2]('b . T[2,3]('c . .)) T[5,2]('d . .))
+                The tree at right may be constructed with Tree.fromList(List('n','k','m','c','a','e','d','g','u','p','q')). Use it to check your code.
+                // The layout rules for a node v with parent u and depth d are as follows:
+                // * x(v) is x(u) plus or minus 2^(m-d), where m is the maximum depth of the
+                //   tree.  The leftmost node has x(v) == 1.
+                // * y(v) == d
+            
+                The more deeper the height of the tree, the further the x-axis will go.
+                In order to know x0, we need ot know the leftMostNodeDepth. Knowing that, we know how 
+                deep the depth of the left most tree, to shift the current x-axis forward. 
+                Not sure why it should start at 2?
+                Get the last position from the left node, because the root will be the last
+                x-axis. We are calculating all the nodes starting from the top and 2 perhaps is
+                the starting point of the second left node. It will count, based on how deep the 
+                depth of the tree, to calculate the number of nodes of the left substree.
+        */
+        def treeDepth: Int
+        def leftmostNodeDepth: Int // the depth of the left most node tree
+        def layoutBinaryTree2: Tree[T] = {
+            val d = treeDepth // getting the depth of the tree first
+            // then run leftMostNodeDepth after
+            val x0 = (2 to leftmostNodeDepth).map((n) => Math.pow(2, d - n).toInt).reduceLeft(_+_) + 1
+            println(s"d is ${d}. x0 is ${x0}. left most node depth : ${leftmostNodeDepth}")
+            layoutBinaryTree2Internal(x0, 1, d - 2) // d-2 because it starts at 2. But how does it starts at 2?
+        }
+        def layoutBinaryTree2Internal(x: Int, depth: Int, exp: Int): Tree[T]
     }
     case class Node[+T](value:T, left:Tree[T], right: Tree[T]) extends Tree[T] {
         override def nodeCount: Int = left.nodeCount + right.nodeCount + 1 // 1 is the current count
@@ -71,6 +104,24 @@ package binarytree {
             val (rightSubTree, nextX) = right.layoutBinaryTreeInternal(myX+1, y+1)
             (new PositionedNode(value, leftSubTree, rightSubTree, myX, y), nextX)
         }
+
+        def treeDepth: Int = {
+            println("running tree depth")
+            (left.treeDepth max right.treeDepth) + 1
+        }
+        def leftmostNodeDepth: Int = {
+            println("running leftostNodeDepth ")
+            left.leftmostNodeDepth + 1
+        }
+        def layoutBinaryTree2Internal(x: Int, depth: Int, exp: Int): Tree[T] = {
+            println(s"value ${value}. exp ${exp}. x-axis ${x - Math.pow(2, exp).toInt}. treeDept: ${treeDepth}. leftMostNodeDepth: ${leftmostNodeDepth} ")
+            new PositionedNode(
+                value,
+                left.layoutBinaryTree2Internal(x - Math.pow(2, exp).toInt, depth + 1, exp - 1),
+                right.layoutBinaryTree2Internal(x + Math.pow(2, exp).toInt, depth + 1, exp - 1),
+                x, depth)
+        }
+            
     }
 
 
@@ -79,6 +130,13 @@ package binarytree {
         override def toString = "."
 
         override def layoutBinaryTreeInternal(x: Int, y: Int): (Tree[Nothing], Int) = (End, x)
+
+        def treeDepth: Int = 0
+        def leftmostNodeDepth: Int = 0
+        def layoutBinaryTree2Internal(x: Int, depth: Int, exp: Int) = {
+            println(s"end reached: x ${x}. depth ${depth}. exp: ${exp}")
+            End
+        }
     }
 
     class PositionedNode[+T](override val value: T, override val left: Tree[T], override val right: Tree[T], x: Int, y: Int) extends Node[T](value, left, right) {
