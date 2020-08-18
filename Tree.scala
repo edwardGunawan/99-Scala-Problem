@@ -323,6 +323,59 @@ package binarytree {
             generateCompleteBinary(1)
         }
 
+
+        /*
+            P67 (**) A string representation of binary trees.
+            Somebody represents binary trees as strings of the following type (see example opposite):
+            a(b(d,e),c(,f(g,)))
+            Write a method which generates this string representation, if the tree is given as usual (in Nodes and Ends). Use that method for the Tree class's and subclass's toString methods. Then write a method (on the Tree object) which does this inverse; i.e. given the string representation, construct the tree in the usual form.
+
+            For simplicity, suppose the information in the nodes is a single letter and there are no spaces in the string.
+
+            scala> Node('a', Node('b', Node('d'), Node('e')), Node('c', End, Node('f', Node('g'), End))).toString
+            res0: String = a(b(d,e),c(,f(g,)))
+
+            scala> Tree.fromString("a(b(d,e),c(,f(g,)))")
+            res1: Node[Char] = a(b(d,e),c(,f(g,)))
+
+            Split the string by parenthesis comma of the parenthesis to indicate the number of left and right node.
+            Then, we recursively creating the tree node from left and right.
+        */
+        def fromString[T](s:String): Tree[Char] = {
+            // counting the number of parenthesis
+            def countParen(currStringValue: Char, counter:Int): Int = currStringValue match {
+                case '(' => counter + 1
+                case ')' => counter - 1
+                case _ => counter
+            }
+            
+            // take the pointer from the start string, parenthesis counter and the endString, get the string and the last position of that end string
+            def getEndOfStringIndex(pointer:Int, parenCounter:Int, endString:Char): Int = {
+                if(s(pointer) == endString && parenCounter == 0) pointer
+                else getEndOfStringIndex(pointer + 1, countParen(s(pointer),parenCounter), endString)
+            }
+
+            // take the end string and get the substring of the string and  also the position on the end of the string
+            def getSplitString(pointer: Int, endString:Char): (String, Int) = {
+                val endPointer = getEndOfStringIndex(pointer,0, endString)
+                (s.substring(pointer, endPointer), endPointer)
+            }
+
+            
+            // recursively splitting the string with the "," for left and right substree, and keep recursively doing so until
+            // it is the leaf node
+            s.length match {
+                case 0 => End
+                case 1 => Node(s(0)) // create that node
+                case _ =>
+                    val (leftSubTree, endLeftPointer) = getSplitString(2, ',') // the left subtree. Start from 2 all the time because it is the beginning of the left subtree
+                    val (rightSubTree, endRightPointer) = getSplitString(endLeftPointer + 1, ')') // the right subtree
+                    // recursively going thrrough the left and the right
+                    // because beginning pointer will be 0 again for the left and right substring
+                    Node(s(0), fromString(leftSubTree), fromString(rightSubTree))
+            }
+
+        }
         
 
         

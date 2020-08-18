@@ -226,7 +226,7 @@ package logic {
                 */ 
                 else {
                     val (val1, q3, q4) = dequeueSmallest(q1,q2)
-                    val (val2, q5,q6) = dequeueSmallest(q3,q4)
+                    val (val2, q5, q6) = dequeueSmallest(q3,q4)
                     val newInternalNode = InternalNode(val1, val2)
                     huffmanR(q5, q6.enqueue(newInternalNode))
                 }
