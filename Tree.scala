@@ -341,7 +341,7 @@ package binarytree {
             Split the string by parenthesis comma of the parenthesis to indicate the number of left and right node.
             Then, we recursively creating the tree node from left and right.
         */
-        def fromString[T](s:String): Tree[Char] = {
+        def fromString(s:String): Tree[Char] = {
             // counting the number of parenthesis
             def countParen(currStringValue: Char, counter:Int): Int = currStringValue match {
                 case '(' => counter + 1
@@ -375,6 +375,23 @@ package binarytree {
                     Node(s(0), fromString(leftSubTree), fromString(rightSubTree))
             }
 
+        }
+
+        /*
+            Construct binary tree from preorder list and in order list.
+            We go with the top to down approach, recursively getting the initial preorder, which is the root, and divide
+            the left and right subtree in the in order list. Set the head to the root each time, and recursively going through
+            the left and right elements of the pre and in List.
+        */
+        def preInTree[T](preList:List[T], inList:List[T]): Tree[T] = preList match {
+            case Nil => End
+            case head :: tl => 
+                val (leftInSubTree, rightInSubTreeIncludeRoot) = inList.span(_ != head) // using in order to determine the amount of left subtree it has
+                val rightInSubTree = rightInSubTreeIncludeRoot.tail // because the root include within the right side the not correct predicate
+                val leftPreSubTree = tl.take(leftInSubTree.length) // since it is the same tree, the left subtree will be equivalent number 
+                val rightPreSubTree = tl.drop(leftPreSubTree.length) // get the rest of the right subtree
+                // recursively create the tree as a root
+                Node(head, preInTree(leftPreSubTree, leftInSubTree), preInTree(rightPreSubTree, rightInSubTree))
         }
         
 
@@ -476,6 +493,36 @@ package binarytree {
                     left.atLevel(level-1) ::: right.atLevel(level-1)
                 case End =>
                     Nil
+            }
+
+
+            /*
+                P68 (**) Preorder and inorder sequences of binary trees.
+                We consider binary trees with nodes that are identified by single lower-case letters, as in the example of problem P67.
+                a) Write methods preorder and inorder that construct the preorder and inorder sequence of a given binary tree, respectively. The results should be lists, e.g. List('a','b','d','e','c','f','g') for the preorder sequence of the example in problem P67.
+
+                scala> Tree.string2Tree("a(b(d,e),c(,f(g,)))").preorder
+                res0: List[Char] = List(a, b, d, e, c, f, g)
+
+                scala> Tree.string2Tree("a(b(d,e),c(,f(g,)))").inorder
+                res1: List[Char] = List(d, b, e, a, c, g, f)
+                b) If both the preorder sequence and the inorder sequence of the nodes of a binary tree are given, then the tree is determined unambiguously. Write a method preInTree that does the job.
+
+                scala> Tree.preInTree(List('a', 'b', 'd', 'e', 'c', 'f', 'g'), List('d', 'b', 'e', 'a', 'c', 'g', 'f'))
+                res2: Node[Char] = a(b(d,e),c(,f(g,)))
+                What happens if the same character appears in more than one node? Try, for instance, Tree.preInTree(List('a', 'b', 'a'), List('b', 'a', 'a')).
+            */
+
+            def preorder: List[T] =  tree match {
+                case End => Nil
+                case Node(value, left, right) => 
+                    value :: left.preorder ::: right.preorder
+            }
+
+            def inorder:List[T] = tree match {
+                case End => Nil
+                case Node(value, left, right) =>
+                    left.inorder ::: (value :: right.inorder)
             }
 
            
