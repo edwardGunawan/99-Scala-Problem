@@ -393,6 +393,31 @@ package binarytree {
                 // recursively create the tree as a root
                 Node(head, preInTree(leftPreSubTree, leftInSubTree), preInTree(rightPreSubTree, rightInSubTree))
         }
+
+
+        /*
+            P69 (**) Dotstring representation of binary trees.
+                We consider again binary trees with nodes that are identified by single lower-case letters, as in the example of problem P67. Such a tree can be represented by the preorder sequence of its nodes in which dots (.) are inserted where an empty subtree (End) is encountered during the tree traversal. For example, the tree shown in problem P67 is represented as "abd..e..c.fg...". First, try to establish a syntax (BNF or syntax diagrams) and then write two methods, toDotstring and fromDotstring, which do the conversion in both directions.
+                scala> Tree.string2Tree("a(b(d,e),c(,f(g,)))").toDotstring
+                res0: String = abd..e..c.fg...
+
+                scala> Tree.fromDotstring("abd..e..c.fg...")
+                res1: Node[Char] = a(b(d,e),c(,f(g,)))
+                // because the we keep using the pointer for the later. That is why it will always move forward.
+                 This is a way to keep the pointer forward.
+        */
+        def fromDotString(s: String): Tree[Char] = {
+            def fromDotStringRecurse(pos:Int): (Tree[Char], Int) = s(pos) match {
+                case '.' => (End, pos+1)
+                case c =>
+                    val (leftSubTree, leftPos) = fromDotStringRecurse(pos + 1)
+                    val (rightSubTree, rightPos) = fromDotStringRecurse(leftPos)
+                    (Node(c, leftSubTree, rightSubTree), rightPos)
+
+            }
+
+            fromDotStringRecurse(0)._1
+        }
         
 
         
@@ -523,6 +548,12 @@ package binarytree {
                 case End => Nil
                 case Node(value, left, right) =>
                     left.inorder ::: (value :: right.inorder)
+            }
+
+            def toDotString:String = tree match {
+                case End => "."
+                case Node(value, left, right) => 
+                    s"${value}${left.toDotString}${right.toDotString}"
             }
 
            
