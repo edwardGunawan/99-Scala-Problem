@@ -13,7 +13,7 @@ package multiwaytree {
                     res0: Int = 2
         */
         def nodeCount: Int = 1 + children.foldLeft(0)((b,a) => {
-            println(s"b ${b}, a ${a}")
+            // println(s"b ${b}, a ${a}")
             b + a.nodeCount 
         })
     }
