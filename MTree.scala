@@ -16,6 +16,24 @@ package multiwaytree {
             // println(s"b ${b}, a ${a}")
             b + a.nodeCount 
         })
+
+        /*
+                P71 (*) Determine the internal path length of a tree.
+                    We define the internal path length of a multiway tree as the total sum of the path lengths from the root to all nodes of the tree. 
+                    By this definition, the tree in the figure of problem P70 has an internal path length of 9. Write a method internalPathLength to return that sum.
+                    scala> "afg^^c^bd^e^^^".internalPathLength
+                    res0: Int = 9
+
+                It is the same as counting the nodes starting from the top, and each layer we count the node for the children.
+                Therefore, we basically also counting first and second path as we go down the Mtree. The path is equal to the node count coming from the root.
+            */
+        def internalPathLength:Int = children.foldLeft(0)((r,c) => r + c.nodeCount + c.internalPathLength)
+        
+        /*
+            Getting all child node first, and then appending the value after
+        */
+        def postorder:List[T] =  children.foldLeft(List.empty[T])((b,a) => b ::: a.postorder) :+ value
+        // children.flatMap(_.postOrder) ::: List(value)
     }
 
     object MTree {
@@ -67,6 +85,19 @@ package multiwaytree {
             // println(splitChildString(1))
 
             MTree(s(0), splitChildString(1).map(string2MTree(_)))
+        }
+
+        implicit class MTreeOps(a:String) {
+            def internalPathLength: Int = MTree.string2MTree(a).internalPathLength
+
+
+            /*
+                P72 (*) Construct the postorder sequence of the tree nodes.
+                    Write a method postorder which constructs the postorder sequence of the nodes of a multiway tree. The result should be a List.
+                    scala> "afg^^c^bd^e^^^".postorder
+                    res0: List[Char] = List(g, f, c, d, e, b, a)
+            */
+            def postorder: List[Char] = MTree.string2MTree(a).postorder
         }
     }
 
