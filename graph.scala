@@ -86,6 +86,14 @@ package graph {
                 case (t, node) => (t, edges.filter(_.n1.value == t).map(n => (n.n2.value, n.value)))
             }.toList
         }
+
+        /*
+            P82 (*) Cycle from a given node.
+                Write a method named findCycles to find closed paths (cycles) starting at a given node in a graph. The method should return all cycles.
+                scala> Graph.fromString("[b-c, f-c, g-h, d, f-b, k-f, h-g]").findCycles("f")
+                res0: List[List[String]] = List(List(f, c, b, f), List(f, b, c, f))
+        */
+        def findCycle(src: T): List[List[T]] = ???
     }
 
     class Digraph[T,U] extends GraphBase[T, U] {
@@ -109,6 +117,42 @@ package graph {
                 case (t, node) => 
                     (t, edges.filter(_.n1.value == t).map(n => (n.n2.value, n.value)))
             }.toList
+        }
+
+        /*
+            P81 (**) Path from one node to another one.
+            Write a method named findPaths to find acyclic paths from one node to another in a graph. The method should return all paths.
+            scala> Digraph.fromStringLabel("[p>q/9, m>q/7, k, p>m/5]").findPaths("p", "q")
+            res0: List[List[String]] = List(List(p, q), List(p, m, q))
+                
+            scala> Digraph.fromStringLabel("[p>q/9, m>q/7, k, p>m/5]").findPaths("p", "k")
+            res1: List[List[String]] = List()
+        */
+        def findPaths(source:T, dest:T): List[List[T]] = {
+            // find nodes
+            def findNodes(source: T): Option[Node] = nodes.get(source)
+
+            // dfs
+            def dfs(src: Node): List[List[T]] = {
+                if(src.value == dest) {
+                    List(List(src.value))
+                } else {
+                    /*
+                        Think of foldLeft like it is iterating through each of the neighbors in the node.
+                        Then, declarative way of thinking is that each iteration, you do a dfs on it, and the 
+                        result, we want to append all the value back to the destination. If the destination is 
+                        empty, then we will not append it because the List itself will be empty, and 
+                        we cannot do map on an empty list.
+                    */
+                    src.neighbors.foldLeft(List.empty[List[T]]){(b, a) => 
+                            (dfs(a).map(lst => src.value :: lst))  ::: b
+                    }
+                }
+            }
+
+            (findNodes(source).map{n => 
+                dfs(n)
+            }).getOrElse(List.empty[List[T]])
         }
     }
 
@@ -213,6 +257,8 @@ package graph {
             for((s,a) <- nodes; (d, l) <- a) g.addArc(s, d, l)
             g
         }
+
+        
     }
 
     
