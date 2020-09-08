@@ -93,7 +93,26 @@ package graph {
                 scala> Graph.fromString("[b-c, f-c, g-h, d, f-b, k-f, h-g]").findCycles("f")
                 res0: List[List[String]] = List(List(f, c, b, f), List(f, b, c, f))
         */
-        def findCycle(src: T): List[List[T]] = ???
+        def findCycles(src: T): List[List[T]] = {
+            def getNode(src: T): Option[Node] = nodes.get(src)
+
+            def cycle(currNode:Node, visited:Set[T], path: List[T]): List[List[T]] = if(visited.contains(src)) {
+                println(s"path ${path}")
+                List(path.reverse) 
+            } 
+            else {
+                currNode.neighbors.filterNot(n => {
+                    // println(s"checking for visited ${visited} ${visited.contains(n.value} ${n.value}")
+                    visited.contains(n.value)
+                }).flatMap(n => {
+                    cycle(n, visited + n.value, n.value :: path)
+                }).filterNot{ r => 
+                    r.isEmpty || r.length <= 3
+                }
+            }
+
+            getNode(src).fold(List.empty[List[T]])(n => cycle(n,Set.empty[T], List(src)))
+        }
     }
 
     class Digraph[T,U] extends GraphBase[T, U] {
