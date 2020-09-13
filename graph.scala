@@ -315,7 +315,7 @@ package graph {
                     
                     val newEdges = edges.filterNot(e => e == nextEdge)
                     val newTreeEdge = nextEdge :: treeEdge
-                    println(s"next Edge${nextEdges} new Nodes Left - ${newNodesLeft}")
+                    println(s"next Edge${nextEdge} new Nodes Left - ${newNodesLeft}")
 
                     minimalSpanningTreeR(newEdges, newNodesLeft, newTreeEdge)
                 }
@@ -326,9 +326,76 @@ package graph {
 
             minimalSpanningTreeR(edges, nodes.values.toList.tail, Nil)
             
-            
-            
         }
+
+        /*
+            P85 (**) Graph isomorphism.
+            Two graphs G1(N1,E1) and G2(N2,E2) are isomorphic if there is a bijection f: N1 → N2 such that for any nodes X,Y of N1, X and Y are adjacent if and only if f(X) and f(Y) are adjacent.
+            Write a method that determines whether two graphs are isomorphic.
+
+            scala> Graph.fromString("[a-b]").isIsomorphicTo(Graph.fromString("[5-7]"))
+            res0: Boolean = true
+
+            Bijection function is one-to-one correspondence, or invertible function, is a function between the elemnts of two sets, where
+            each elemnt of one set is paired with exactly one element of the other set, and each element of the other set is paired with 
+            exactly one elment of the first set. There are no unpaired elements.
+
+            Two graphs G1 and G2 are said to be isomorphic if - 
+            - Their number of components (vertices and edges) are same
+            - Their edge connectivity is retained
+            Note - in short, out of the two isomorphic graphs, one is tweaked version of the other. An 
+            unlabelled graph also can be thought of as an isomorphic graph.
+
+
+        */
+        def isIsomorphicTo[R,S](o: Graph[R, S]): Boolean = {
+            // here we are getting all the possible mapping, therefore, the filter isValidMapping will filter out the ones that is 
+            // in the iso that is not right.
+            def listMapping(tNodes: List[Node], oNodes: List[o.Node]) = 
+            for {
+                tn <- tNodes
+                on <- oNodes
+            } yield (tn, on)
+
+            
+            /*
+                Pre-check on the iso mapping neighbors to see if any of the nodes that is already map in
+                iso have the same mapping.
+            */
+            def isValidMapping(iso: Map[Node, o.Node]): Boolean = nodes.values.forall{ tn =>
+                // if the node doesn't exist in the iso map, then don't evaluate the mapping
+                // if the node exist in the map then evaluate to check if all tn neighbors that contains in iso mapping is correct
+                // n2 neighbors also contains node mapping of iso(neigh)
+                // Get all the neighbors that contains in the iso mapping
+                // check if the mapping between those neighbors is correct
+                (!iso.contains(tn)) || tn.neighbors.filter(n => iso.contains(n)).forall{ neigh =>
+                    iso(tn).neighbors.contains(iso(neigh))
+                }
+            }
+
+            def isValidCompleteMapping(iso: Map[Node, o.Node]): Boolean = nodes.values.forall{tn => 
+                // check the one to one mapping of the neighbors of nodes corresponding to tn 
+                // is equal to the neighbors of iso(tn)
+                Set(tn.neighbors.map(n => iso(n)): _*) == Set(iso(tn).neighbors: _*)
+            }
+
+            def isIsomorphicToR(gNodes: List[Node], oNodes: List[o.Node], iso:Map[Node,o.Node]): Boolean = {
+                if(gNodes == Nil) isValidCompleteMapping(iso)
+                else {
+                    // filter our the invalid isomorphic first with isValidMapping
+                    // then check if one combination exist, that means the graph is isomorphic
+                    listMapping(gNodes, oNodes).filter{tup => isValidMapping(iso + tup)}.exists{tup =>
+                        val (thisNode, thatNode) = tup
+                        isIsomorphicToR(gNodes.filter(_ == thisNode), oNodes.filter(_ == thatNode), iso + tup)
+                    }
+                }
+            }
+
+            isIsomorphicToR(nodes.values.toList, o.nodes.values.toList, Map())
+        }
+
+
+        
 
         
     }
