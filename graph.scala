@@ -1,4 +1,7 @@
 package graph {
+
+    import scala.annotation.tailrec
+    import scala.concurrent.duration.span
     /*
         The representations we introduced so far are bound to our implementation and therefore well suited for automated processing, but their syntax is not very user-friendly. Typing the terms by hand is cumbersome and error-prone. 
         We can define a more compact and "human-friendly" notation as follows: A graph is represented by a string of terms of the type X or Y-Z separated by commas. The standalone terms stand for isolated nodes, the Y-Z terms describe edges. 
@@ -52,6 +55,59 @@ package graph {
             nodes.values.toList.map((n) => (n.value, n.adj.map((e) =>
             (edgeTarget(e, n).get.value, e.value))))
         
+             /*
+            P81 (**) Path from one node to another one.
+            Write a method named findPaths to find acyclic paths from one node to another in a graph. The method should return all paths.
+            scala> Digraph.fromStringLabel("[p>q/9, m>q/7, k, p>m/5]").findPaths("p", "q")
+            res0: List[List[String]] = List(List(p, q), List(p, m, q))
+                
+            scala> Digraph.fromStringLabel("[p>q/9, m>q/7, k, p>m/5]").findPaths("p", "k")
+            res1: List[List[String]] = List()
+        */
+        def findPaths(source:T, dest:T): List[List[T]] =  {
+            
+            def findPathsR(currNodes: Node, currPath: List[T]): List[List[T]] = {
+                if(currNodes.value == dest) List(currPath)
+                else {
+                    // loop through the neighbors
+                    // filter out the existing ndoes in the currPath, those are cycles
+                    // append the neighboring nodes to the currPath, and do dfs again on those
+                    currNodes.neighbors.filterNot(n => currPath.contains(n.value)).flatMap(n => findPathsR(n, n.value :: currPath))
+                }
+            }
+
+            // get the source node from the maps of nodes
+            // reverse the elements because we are appending from the beginning
+            findPathsR(nodes(source), List(source)).map(_.reverse)
+        }
+        
+        // This works for Digraph but will create Stack overflow for non-digraph
+        // {
+        //     // find nodes
+        //     def findNodes(source: T): Option[Node] = nodes.get(source)
+
+        //     // dfs
+        //     def dfs(src: Node): List[List[T]] = {
+        //         if(src.value == dest) {
+        //             List(List(src.value))
+        //         } else {
+        //             /*
+        //                 Think of foldLeft like it is iterating through each of the neighbors in the node.
+        //                 Then, declarative way of thinking is that each iteration, you do a dfs on it, and the 
+        //                 result, we want to append all the value back to the destination. If the destination is 
+        //                 empty, then we will not append it because the List itself will be empty, and 
+        //                 we cannot do map on an empty list.
+        //             */
+        //             src.neighbors.foldLeft(List.empty[List[T]]){(b, a) => 
+        //                     (dfs(a).map(lst => src.value :: lst))  ::: b
+        //             }
+        //         }
+        //     }
+
+        //     (findNodes(source).map{n => 
+        //         dfs(n)
+        //     }).getOrElse(List.empty[List[T]])
+        // }
     
     }
 
@@ -93,26 +149,128 @@ package graph {
                 scala> Graph.fromString("[b-c, f-c, g-h, d, f-b, k-f, h-g]").findCycles("f")
                 res0: List[List[String]] = List(List(f, c, b, f), List(f, b, c, f))
         */
-        def findCycles(src: T): List[List[T]] = {
-            def getNode(src: T): Option[Node] = nodes.get(src)
+        def findCycles(src: T): List[List[T]] =  {
+            // loop through all the neighbors.
+            // find the paths from the neighbors to itself
+            // append the initial value of List[T] to the src so it will be src - neighbors - src
+            // filter out the ones that has length of more than 3
+            nodes(src).neighbors.flatMap(n => findPaths(n.value, src)).map(lst => src :: lst).filter(_.length > 3)
+        }
+        
+        // My implementation
+        // {
+        //     def getNode(src: T): Option[Node] = nodes.get(src)
 
-            def cycle(currNode:Node, visited:Set[T], path: List[T]): List[List[T]] = if(visited.contains(src)) {
-                println(s"path ${path}")
-                List(path.reverse) 
-            } 
-            else {
-                currNode.neighbors.filterNot(n => {
-                    // println(s"checking for visited ${visited} ${visited.contains(n.value} ${n.value}")
-                    visited.contains(n.value)
-                }).flatMap(n => {
-                    cycle(n, visited + n.value, n.value :: path)
-                }).filterNot{ r => 
-                    r.isEmpty || r.length <= 3
+        //     def cycle(currNode:Node, visited:Set[T], path: List[T]): List[List[T]] = if(visited.contains(src)) {
+        //         println(s"path ${path}")
+        //         List(path.reverse) 
+        //     } 
+        //     else {
+        //         currNode.neighbors.filterNot(n => {
+        //             // println(s"checking for visited ${visited} ${visited.contains(n.value} ${n.value}")
+        //             visited.contains(n.value)
+        //         }).flatMap(n => {
+        //             cycle(n, visited + n.value, n.value :: path)
+        //         }).filterNot{ r => 
+        //             r.isEmpty || r.length <= 3
+        //         }
+        //     }
+
+        //     getNode(src).fold(List.empty[List[T]])(n => cycle(n,Set.empty[T], List(src)))
+        // }
+
+
+        /*
+            P83 (**) Construct all spanning trees.
+                Write a method spanningTrees to construct all spanning trees of a given graph. With this method, find out how many spanning trees there are for the graph depicted to the right. The data of this example graph can be found below. When you have a correct solution for the spanningTrees method, use it to define two other useful methods: isTree and isConnected. Both are five-minute tasks!
+                Graph:
+
+                Graph.term(List('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'),
+                        List(('a', 'b'), ('a', 'd'), ('b', 'c'), ('b', 'e'),
+                                ('c', 'e'), ('d', 'e'), ('d', 'f'), ('d', 'g'),
+                                ('e', 'h'), ('f', 'g'), ('g', 'h')))
+                scala> Graph.fromString("[a-b, b-c, a-c]").spanningTrees
+                res0: List[Graph[String,Unit]] = List([a-b, b-c], [a-c, b-c], [a-b, a-c])
+            
+                Spanning tree is a subset of Graph G, which has all the vertices covered with minimum possible
+                number of edges. Hence, a spanning tree does not have cycles and it cannot be disconnectd.
+
+                Every connected and undirected Graph G has at least one spanning tree. A disconnected graph does not have any spanning
+                tree, as it cannot be spanned to all its vertices.
+
+                Spanning tree is basically used to find a minimum path to connect all nodes in a graph.
+                - Civil network planning
+                - Computer Network Routing Protocol
+                - Cluster Analysis
+
+                Minimum Spanning Tree
+                In a weighted graph, a minimum spanning tree is a spanning tree that has minimnum weight than all
+                other spanning trees of the same graph. In real-world situations, this weight can be measured as distance, congestion, traffic load 
+                or any arbitrary value denoted to the edges.
+
+                Minimum Spanning Tree Algorithm:
+                - Kruskal's Algorithm
+                - Prim's Algorithm
+        */
+
+    
+  
+        def spanningTrees: List[Graph[T, U]] = {
+            // needs to get the List of nodes and the edges to construct the graph
+            // loop through all the nodes, and do dfs until it hits all the nodes, store the edges while traverse
+            def dfs(node: Node, edgeList: List[Edge], nodeSoFar: List[Node]): List[(List[Edge], List[Node])] = {
+                // check if the neighbors of this nodes has all been visited. If the neighbors has all been visited that means 
+                // we visited all the nodes (or these are the components in the graph that is connected)
+                if(node.neighbors.foldLeft(true)((b,a) => b && nodeSoFar.contains(a))) {
+                    List((edgeList, nodeSoFar))
+                } else {
+                    // map through the neighbors
+                    // filter through the neighbors that is already visited
+                    // add that edge and the visited node and recursively going through again
+                    node.adj.filterNot{e => edgeList.contains(e) }
+                    .flatMap{ e  => {
+                        val neigh = edgeTarget(e, node).get
+                        dfs(neigh, e :: edgeList, neigh :: nodeSoFar)
+                    }}
                 }
             }
 
-            getNode(src).fold(List.empty[List[T]])(n => cycle(n,Set.empty[T], List(src)))
+        
+
+            // find the nodes that is not yet traverse and travers through those nodes
+            // we can just check the List[Node] after the DFS to input all the node to the node that has been traverse
+            // we then can skip the already traverse node and go to the one that is not yet in the node to visit in foldLeft
+            nodes.values.toList.foldLeft(List.empty[(List[Edge], List[Node])]){(b,a) => 
+
+                    val res = dfs(a, List(), List(a))
+                    // get the difference
+                    val difference = res.filterNot{
+                        case (edgeList, nodeLst) => 
+                            // transform the List[List[Edge], List[Node]] => List[Set[Edge], Set[Node]]
+                            // we know that the edge and node will be unique after running DFS.
+                            b.map{tup => (tup._1.toSet, tup._2.toSet)}
+                            .contains((edgeList.toSet, nodeLst.toSet))
+
+                    }
+
+                    b ++ difference
+            }.map{
+                case (edgeList, nodeLst) => Graph.termLabel(nodeLst.map(_.value), edgeList.map(_.toTuple))
+            }
         }
+        // We know if it is not a cycle and if it is a DAG if the total amount of graph is 1 (if only if there is no island in the graph)
+        def isTree: Boolean = spanningTrees.length == 1
+
+        // if the graph is connected, that means spanning trees has a length greater than 0 ( This is assuming if there is an island or other connected components it will return empty list)
+        // in the answer on this question it will do that in order to check if the graph is connected.
+        // spanningTrees.length > 0
+        // However, in this case, we need to go through the spanning trees to check if all the list of graph has the same node length
+        def isConnected: Boolean = (spanningTrees.length > 0) && spanningTrees.tail.foldLeft((true, spanningTrees.head.nodes.keys.toList.toSet)){(b,a) => 
+            val (bool, set) = b
+
+            // if the previous node has the same node value as the head of the set, AND the current not doesn't have any diff
+            ((bool && set.diff(a.nodes.keys.toList.toSet).toList.length == 0), set)
+        }._1
     }
 
     class Digraph[T,U] extends GraphBase[T, U] {
@@ -138,41 +296,7 @@ package graph {
             }.toList
         }
 
-        /*
-            P81 (**) Path from one node to another one.
-            Write a method named findPaths to find acyclic paths from one node to another in a graph. The method should return all paths.
-            scala> Digraph.fromStringLabel("[p>q/9, m>q/7, k, p>m/5]").findPaths("p", "q")
-            res0: List[List[String]] = List(List(p, q), List(p, m, q))
-                
-            scala> Digraph.fromStringLabel("[p>q/9, m>q/7, k, p>m/5]").findPaths("p", "k")
-            res1: List[List[String]] = List()
-        */
-        def findPaths(source:T, dest:T): List[List[T]] = {
-            // find nodes
-            def findNodes(source: T): Option[Node] = nodes.get(source)
-
-            // dfs
-            def dfs(src: Node): List[List[T]] = {
-                if(src.value == dest) {
-                    List(List(src.value))
-                } else {
-                    /*
-                        Think of foldLeft like it is iterating through each of the neighbors in the node.
-                        Then, declarative way of thinking is that each iteration, you do a dfs on it, and the 
-                        result, we want to append all the value back to the destination. If the destination is 
-                        empty, then we will not append it because the List itself will be empty, and 
-                        we cannot do map on an empty list.
-                    */
-                    src.neighbors.foldLeft(List.empty[List[T]]){(b, a) => 
-                            (dfs(a).map(lst => src.value :: lst))  ::: b
-                    }
-                }
-            }
-
-            (findNodes(source).map{n => 
-                dfs(n)
-            }).getOrElse(List.empty[List[T]])
-        }
+   
     }
 
     abstract class GraphObjBase {
