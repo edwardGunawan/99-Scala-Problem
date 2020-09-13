@@ -271,6 +271,66 @@ package graph {
             // if the previous node has the same node value as the head of the set, AND the current not doesn't have any diff
             ((bool && set.diff(a.nodes.keys.toList.toSet).toList.length == 0), set)
         }._1
+
+
+        /*
+            P84 (**) Construct the minimal spanning tree.
+                Write a method minimalSpanningTree to construct the minimal spanning tree of a given labeled graph. Hint: Use Prim's Algorithm. A small modification of the solution of P83 does the trick. The data of the example graph to the right can be found below.
+                Graph:
+
+                Graph.termLabel(
+                List('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'),
+                    List(('a', 'b', 5), ('a', 'd', 3), ('b', 'c', 2), ('b', 'e', 4),
+                            ('c', 'e', 6), ('d', 'e', 7), ('d', 'f', 4), ('d', 'g', 3),
+                            ('e', 'h', 5), ('f', 'g', 4), ('g', 'h', 1)))
+                scala> Graph.fromStringLabel("[a-b/1, b-c/2, a-c/3]").minimalSpanningTree
+                res0: Graph[String,Int] = [a-b/1, b-c/2]
+
+            Greedy algorithm to find the next edge that is the least amount of values through comparator.
+            Having an edge list and a node list, remove the node list and the edge list one by one, and add them to the 
+            treeEdges. At the end, construct the graph through all the nodes in the list.
+
+            Prim's Algo : It is not a dfs. It is more like choosing the least amount of edges for all the nodes that has been touched.
+
+            Nice video illustrating what Prims Algo is: https://www.youtube.com/watch?v=Uj47dxYPow8
+
+        */
+        def minimalSpanningTree(implicit f: (U) => Ordered[U]): Graph[T, U] = {
+            // it will start from the tail so leaving the head as the src point. Therefore, when we get the adj value of the head
+            // and loop through it, we will need to get it in terms of the edges.
+            def minimalSpanningTreeR(edges: List[Edge], nodesLeft: List[Node], treeEdge: List[Edge]): Graph[T,U] = {
+                // no more nodes to choose create the Graph
+                if(nodesLeft.isEmpty) {
+                    Graph.termLabel(nodes.keys.toList, treeEdge.map(_.toTuple))
+                } else {
+                    // the src will not be in nodesLeft so we get all the edges that is currently not in nodesLeft (that is included the previous nodes that we remove). Therefore, all the edges that we still have in the first Node.
+                    // then afterwards, recursively calling the minimalSpanningTreeR we will remove the edges, leaving the 
+                    // edges only the ones in the nodesLeft. Then while we moved one of the edges to treeEdge, we also get to remove
+                    // the next traversed edge n2 from the nodesLeft.
+                    // the value of this edge will be bigger and bigger, because there are other edges that we didn't pick
+                    // the isNodeInEdgeNotInNodesLeft value prevent any cycles edges because we want to choose the edge that has one node in the nodesLeft .If both of them are not in nodesLeft we will not consider them.
+                    val nextEdge = edges.filter(e => isNodeInEdgeNotInNodesLeft(e, nodesLeft)).reduceLeft((b,a) => if(b.value > a.value) a else b)
+                    val newNodesLeft = nodesLeft.filter(n => edgeTarget(nextEdge, n) == None) // remove the nodes that is connected with the newEdge
+                    
+                    
+                    val newEdges = edges.filterNot(e => e == nextEdge)
+                    val newTreeEdge = nextEdge :: treeEdge
+                    println(s"next Edge${nextEdges} new Nodes Left - ${newNodesLeft}")
+
+                    minimalSpanningTreeR(newEdges, newNodesLeft, newTreeEdge)
+                }
+            }
+
+            def isNodeInEdgeNotInNodesLeft(edge:Edge, nodesLeft: List[Node]): Boolean = !(nodesLeft.contains(edge.n1) && nodesLeft.contains(edge.n2)) // xor because one value needs to be in the edge to prevent cycles
+
+
+            minimalSpanningTreeR(edges, nodes.values.toList.tail, Nil)
+            
+            
+            
+        }
+
+        
     }
 
     class Digraph[T,U] extends GraphBase[T, U] {
