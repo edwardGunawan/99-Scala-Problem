@@ -194,6 +194,45 @@ package graph {
         def nodesByDegree: List[Node] = nodes.values.toList.sortWith{
             case (n1, n2) => n1.degree > n2.degree
         }
+
+        /*
+            Welsh Powell Graph Colouring Algorihm
+            labelling each vertex such that no two adjacent vertex have same color.
+            This algorithm is also help to find the chromatic number of graph.
+
+            1. Find the degree of each vertex
+            2. List the vertices in order of descending degrees
+            3. Colour the first vertex with color 1
+            4. Move down the list and color all the vertices not connected to the coloured vertex, with the same color.
+            5. Repeat step 4 on all uncolored vertices with a new color, in descnding order of degrees until all the 
+            vertices are coloured.
+        */
+        def colorNodes: List[(Node, Int)] = {
+            /*
+                Step 4 color all vertices not connected to current vertices with the same color
+            */
+            @tailrec
+            def colorVertices(color:Int, rest:List[Node], coloredSoFar: List[(Node,Int)]): List[(Node, Int)] = rest match {
+                case Nil => coloredSoFar
+                case head :: tl => 
+                    val (neigh, nonNeigh) = tl.partition(n => isNeighbor(head, n))
+                    colorVertices(color+1, neigh, (head, color) :: colorAllVertices(color, nonNeigh) ::: coloredSoFar)
+            }
+
+            def isNeighbor(n1: Node, n2: Node): Boolean = n1.neighbors.contains(n2)
+
+            def colorAllVertices(color:Int, lst:List[Node]): List[(Node, Int)] = lst.map(n => (n, color))
+            
+            colorVertices(1, this.nodesByDegree, List.empty[(Node,Int)])
+        }
+
+        /*
+            P87 (**) Depth-first order graph traversal.
+            Write a method that generates a depth-first order graph traversal sequence. The starting point should be specified, and the output should be a list of nodes that are reachable from this starting point (in depth-first order).
+            scala> Graph.fromString("[a-b, b-c, e, a-c, a-d]").nodesByDepthFrom("d")
+            res0: List[String] = List(c, b, a, d)
+        */
+        def nodesByDepthFrom(src: T): List[T] = ???
     
     }
 
