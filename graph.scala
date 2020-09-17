@@ -232,7 +232,33 @@ package graph {
             scala> Graph.fromString("[a-b, b-c, e, a-c, a-d]").nodesByDepthFrom("d")
             res0: List[String] = List(c, b, a, d)
         */
-        def nodesByDepthFrom(src: T): List[T] = ???
+        def nodesByDepthFrom(src: T): List[T] = {
+
+            // this is where we do dfs on that node if it is not yet visited
+            // we will also call this in the init call in nodesByDepthFrom
+            def depthFrom(node:Node, seen:Set[T]): List[T] = {
+                // this will call dfs by adding the current node first to the visited
+                // it won't cause stackoverflow because eventually the set will keep populating
+                // since dfs will call depthFrom and depthFrom will call dfs again.
+                dfs(node.neighbors, seen + node.value) ::: List(node.value) // here we are appending the node because it is the fist that we visited
+            }
+            
+            
+            def dfs(neighbors:List[Node], visited: Set[T]): List[T] = 
+                neighbors match {
+                    case Nil => Nil
+                    case head :: tl if(visited.contains(head.value)) => 
+                        dfs(tl, visited)
+                    case head :: tl => 
+                        //  find the nodesByDepthForm of the head
+                        val depthForm = depthFrom(head, visited)
+                        // traverse through the nxt neighbor and appending all the traverse depthForm
+                        depthForm ::: dfs(tl, visited ++ depthForm)
+                }
+            
+
+            nodes.get(src).map(n => depthFrom(n, Set())).getOrElse(List.empty[T])
+        }
     
     }
 
