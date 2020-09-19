@@ -259,6 +259,49 @@ package graph {
 
             nodes.get(src).map(n => depthFrom(n, Set())).getOrElse(List.empty[T])
         }
+
+        /*
+            P88 (**) Connected components.
+                Write a function that splits a graph into its connected components.
+                scala> Graph.fromString("[a-b, c]").splitGraph
+                res0: List[Graph[String,Unit]] = List([a-b], [c])
+        */
+        def splitGraph: List[Graph[T,U]] = {
+            
+            // construct a DFS for this node
+            def dfs(neighbors: List[Node],visited: Set[Node]): List[Node] =  neighbors match {
+                case Nil => visited.toList
+                // if the neighbors is already visited then skip the neighbors to the next one
+                case head :: tl if(visited.contains(head)) => 
+                    dfs(tl, visited)
+                case head :: tl =>
+                    // traverse through the head and its neighbors
+                    val headDfsNodes = dfs(head.neighbors, visited + head)
+                    dfs(tl, visited ++ headDfsNodes)
+            }
+
+            val (splitGraph, visited) = nodes.values.toList.foldLeft((List.empty[Graph[T, U]],Set.empty[Node])){ (b,a) =>
+                val (graphList, visited) = b
+                if(visited.contains(a)) {
+                    b
+                } else {
+                    // set it back to empty again
+                    val listNode = dfs(a.neighbors, Set.empty[Node] + a)
+
+                    val duplicateRemoved = listNode.flatMap(n => n.adj).toSet // converting to set to remove all the duplicates
+                    val edgesVal = duplicateRemoved.toList.map(_.toTuple) // convert it back to list to get the List[(T,T,U)]
+                    
+                    val newGraph = Graph.termLabel(listNode.map(_.value), edgesVal)
+                    
+                    // adding the listNode to the pool of visited
+                    (newGraph :: graphList, visited ++ listNode)
+                }
+            }
+
+            splitGraph
+                
+            
+        }
     
     }
 
