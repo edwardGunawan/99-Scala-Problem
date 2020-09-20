@@ -267,8 +267,29 @@ package graph {
                 res0: List[Graph[String,Unit]] = List([a-b], [c])
         */
         def splitGraph: List[Graph[T,U]] = {
+
+            /*
+                Implementation of BFS
+                Keep appending the neighbors of the head into like a stack like until the neighbors is empty.
+                And then keep appending the new head to the `soFar` ListNode, and return that at the end.
+                Therefore, the neighbors serve more like a queue.
+            */
+            @tailrec
+            def bfs(queue: List[Node], soFar: List[Node]): List[Node] = queue match {
+                case Nil => soFar
+                case head :: tl => 
+                    // get all the neighbors that are not yet visited (not in soFar)
+                    val newQueue = head.neighbors.filterNot(n => soFar.contains(n))
+                    
+                    // union the tail of the queue to the newQueue, and appending it after
+                    bfs(tl.union(newQueue), head :: soFar)
+            }
             
             // construct a DFS for this node
+            // the functional way of DFS is to pretend that it is the dfs of the src node, we usually pass in the src as an argument in Java
+            // but in the functional way the neighbors and visited, with a pattern matching. The pattern matching series will be
+            // if the the stuff is visited, go through the neighbors and if it is not yet visited, we will call dfs on that node's neighbors.
+            // Then after, we keep traverse the next node on the previous stack src node
             def dfs(neighbors: List[Node],visited: Set[Node]): List[Node] =  neighbors match {
                 case Nil => visited.toList
                 // if the neighbors is already visited then skip the neighbors to the next one
@@ -299,8 +320,68 @@ package graph {
             }
 
             splitGraph
-                
-            
+        }
+
+
+        /*
+        P89 (**) Bipartite graphs.
+            Write a function that determines whether a given graph is bipartite.
+            scala> Digraph.fromString("[a>b, c>a, d>b]").isBipartite
+            res0: Boolean = true
+
+            scala> Graph.fromString("[a-b, b-c, c-a]").isBipartite
+            res1: Boolean = false
+
+            scala> Graph.fromString("[a-b, b-c, d]").isBipartite
+            res2: Boolean = true
+
+            scala> Graph.fromString("[a-b, b-c, d, e-f, f-g, g-e, h]").isBipartite
+            res3: Boolean = false
+
+            Bipartite graph is a graph whose vertices can be divided into two disjoint and independent
+            sets U and V such that every edge connects a vertex in U to on V. Vertex U and V are usually
+            called the parts of the graph. Equivalently, a bipartite graph is a graph that does not contain any
+            odd-length cycles.
+
+            The two sets of U and V may be thought of as a coloring of the graph with two colors If one color is U and the color is V,
+            each edge has endpoints of differing colors, as is required in the graph coloring problems.
+
+            Algorithm:
+            BFS
+            1. Assign RED Color to the source vertex (putting into set U)
+            2. Color all neighbors with BLUE color (putting it into set V)
+            3. Color all neighbors with RED color (putting into set U)
+            4. This way, assign color to all vertices such that it satisfies all the constraints of m way coloring problem where m = 2
+            5. While assigning colors, if we find the neighbors which is colored with the same color as current vertex, then the graph cannot be colored with 2 vertices (or graph is not Bipartite)
+        */
+        def isBipartite: Boolean = {
+
+            def isBipartite(queue:List[Node], map: Map[Node, Int]):Boolean = queue match {
+                case Nil => true
+                case h :: tl => 
+                    val color = map(h)
+                    if(isNeighborBipartite(color, h.neighbors, map)) {
+                        val (neighborToVisit, newMap) = colorNeighbors(1 - color, h.neighbors.filterNot(n => queue.contains(n)), map)
+                        isBipartite(tl.union(neighborToVisit), newMap)
+                    } else {
+                        false
+                    }
+            }
+
+            def colorNeighbors(nextColor: Int, neighbors: List[Node], map:Map[Node,Int]): (List[Node], Map[Node,Int]) = neighbors.filterNot(n => map.contains(n)).foldLeft((List.empty[Node], map)){(b,a) => 
+                val (nodeToVisit,mapping) = b
+                (a :: nodeToVisit, (mapping + (a -> nextColor)))
+            }
+
+            def isNeighborBipartite(currColor: Int, neighbors: List[Node], map:Map[Node,Int]): Boolean = neighbors.forall{n => 
+                if(map.contains(n) && map(n) == currColor) false
+                else true
+            }
+
+            this.splitGraph.forall{g => 
+                val src = nodes(g.nodes.values.toList.head.value)
+                isBipartite(List(src), Map(src -> 0))
+            }
         }
     
     }
